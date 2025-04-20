@@ -1,0 +1,31 @@
+@import 'antd/dist/reset.css';
+
+.Resizer {
+  background: #f0f0f0;
+  z-index: 1;
+  box-sizing: border-box;
+  background-clip: padding-box;
+}
+
+.Resizer.vertical {
+  width: 11px;
+  margin: 0 -5px;
+  border-left: 5px solid rgba(255, 255, 255, 0);
+  border-right: 5px solid rgba(255, 255, 255, 0);
+  cursor: col-resize;
+}
+
+.Resizer.vertical:hover {
+  border-left: 5px solid rgba(0, 0, 0, 0.1);
+  border-right: 5px solid rgba(0, 0, 0, 0.1);
+}
+
+.split-pane {
+  position: relative;
+  height: calc(100vh - 64px);
+}
+
+.pane {
+  overflow: auto;
+  height: 100%;
+} 
