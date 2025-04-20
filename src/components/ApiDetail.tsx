@@ -1,134 +1,151 @@
 import React from 'react';
-import { Card, Table, Typography } from 'antd';
-import { ApiDetail as IApiDetail } from '../types';
+import { Card, Table, Typography, Tag, Tabs, Empty, Descriptions } from 'antd';
+import { useApi } from '../context/ApiContext';
 
 const { Title } = Typography;
+const { TabPane } = Tabs;
 
-const mockApiDetail: IApiDetail = {
-  id: '1',
-  name: '获取用户列表',
-  method: 'GET',
-  path: '/api/v1/users',
-  description: '获取系统中的用户列表，支持分页和搜索',
-  parameters: [
-    {
-      name: 'page',
-      type: 'number',
-      description: '页码，默认1',
-      required: false
-    },
-    {
-      name: 'limit',
-      type: 'number',
-      description: '每页数量，默认20',
-      required: false
-    },
-    {
-      name: 'keyword',
-      type: 'string',
-      description: '搜索关键词',
-      required: false
-    }
-  ],
-  headers: {
-    'Content-Type': 'application/json',
-    'Authorization': 'Bearer token'
-  },
-  response: {
-    code: 200,
-    message: 'success',
-    data: {
-      total: 100,
-      items: []
-    }
-  }
+const methodColors = {
+  'GET': '#87d068',
+  'POST': '#108ee9',
+  'PUT': '#f50',
+  'DELETE': '#ff4d4f',
+  'PATCH': '#faad14'
 };
 
 const ApiDetail: React.FC = () => {
+  const { selectedApi } = useApi();
+
+  if (!selectedApi) {
+    return (
+      <div style={{ 
+        height: '100%', 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center' 
+      }}>
+        <Empty description="请选择一个接口" />
+      </div>
+    );
+  }
+
   const paramColumns = [
     {
       title: '参数名',
       dataIndex: 'name',
       key: 'name',
+      width: '20%',
     },
     {
       title: '类型',
       dataIndex: 'type',
       key: 'type',
+      width: '15%',
+      render: (type: string) => <Tag>{type}</Tag>
     },
     {
       title: '描述',
       dataIndex: 'description',
       key: 'description',
+      width: '45%',
     },
     {
       title: '是否必填',
       dataIndex: 'required',
       key: 'required',
-      render: (required: boolean) => required ? '是' : '否'
+      width: '20%',
+      render: (required: boolean) => (
+        <Tag color={required ? '#f50' : '#87d068'}>
+          {required ? '是' : '否'}
+        </Tag>
+      )
     }
   ];
 
   return (
     <div style={{ height: '100%', overflow: 'auto', padding: '16px' }}>
-      <Card>
-        <Title level={4}>{mockApiDetail.name}</Title>
-        <div style={{ marginBottom: '16px' }}>
-          <span
-            style={{
-              padding: '2px 6px',
-              borderRadius: '4px',
-              marginRight: '8px',
-              fontSize: '12px',
-              background: mockApiDetail.method === 'GET' ? '#87d068' : '#108ee9',
-              color: '#fff'
-            }}
-          >
-            {mockApiDetail.method}
-          </span>
-          <span>{mockApiDetail.path}</span>
+      <Card bordered={false}>
+        <div style={{ marginBottom: '24px' }}>
+          <Title level={4} style={{ marginBottom: '16px' }}>
+            {selectedApi.name}
+            <Tag 
+              color={methodColors[selectedApi.method]} 
+              style={{ marginLeft: '12px' }}
+            >
+              {selectedApi.method}
+            </Tag>
+          </Title>
+          <Typography.Paragraph type="secondary">
+            {selectedApi.description}
+          </Typography.Paragraph>
+          <Typography.Text code copyable>
+            {selectedApi.path}
+          </Typography.Text>
         </div>
-        <p>{mockApiDetail.description}</p>
 
-        <Title level={5}>请求参数</Title>
-        <Table
-          columns={paramColumns}
-          dataSource={mockApiDetail.parameters}
-          pagination={false}
-          size="small"
-        />
+        <Tabs defaultActiveKey="params">
+          <TabPane tab="请求参数" key="params">
+            <Table
+              columns={paramColumns}
+              dataSource={selectedApi.parameters}
+              pagination={false}
+              size="small"
+              rowKey="name"
+            />
+          </TabPane>
+          
+          <TabPane tab="请求头" key="headers">
+            <Descriptions bordered size="small" column={1}>
+              {Object.entries(selectedApi.headers).map(([key, value]) => (
+                <Descriptions.Item 
+                  key={key} 
+                  label={<Typography.Text code>{key}</Typography.Text>}
+                >
+                  {value}
+                </Descriptions.Item>
+              ))}
+            </Descriptions>
+          </TabPane>
 
-        <Title level={5} style={{ marginTop: '16px' }}>Headers</Title>
-        <Table
-          columns={[
-            {
-              title: '参数名',
-              dataIndex: 'name',
-              key: 'name',
-            },
-            {
-              title: '参数值',
-              dataIndex: 'value',
-              key: 'value',
-            }
-          ]}
-          dataSource={Object.entries(mockApiDetail.headers).map(([name, value]) => ({
-            key: name,
-            name,
-            value
-          }))}
-          pagination={false}
-          size="small"
-        />
+          <TabPane tab="响应示例" key="response">
+            <div style={{ 
+              background: '#f5f5f5',
+              padding: '16px',
+              borderRadius: '4px',
+              position: 'relative'
+            }}>
+              <Typography.Text code copyable style={{ position: 'absolute', right: '8px', top: '8px' }}>
+                复制
+              </Typography.Text>
+              <pre style={{ margin: 0 }}>
+                {JSON.stringify(selectedApi.response, null, 2)}
+              </pre>
+            </div>
+          </TabPane>
 
-        <Title level={5} style={{ marginTop: '16px' }}>响应示例</Title>
-        <pre style={{ 
-          background: '#f5f5f5',
-          padding: '16px',
-          borderRadius: '4px'
-        }}>
-          {JSON.stringify(mockApiDetail.response, null, 2)}
-        </pre>
+          {selectedApi.status && (
+            <TabPane tab="测试状态" key="status">
+              <Descriptions bordered size="small">
+                <Descriptions.Item label="测试状态">
+                  <Tag color={
+                    selectedApi.status === 'success' ? '#52c41a' : 
+                    selectedApi.status === 'failed' ? '#ff4d4f' : 
+                    '#d9d9d9'
+                  }>
+                    {selectedApi.status === 'success' ? '通过' : 
+                     selectedApi.status === 'failed' ? '失败' : 
+                     '未测试'}
+                  </Tag>
+                </Descriptions.Item>
+                {selectedApi.lastTestedAt && (
+                  <Descriptions.Item label="最后测试时间">
+                    {selectedApi.lastTestedAt}
+                  </Descriptions.Item>
+                )}
+              </Descriptions>
+            </TabPane>
+          )}
+        </Tabs>
       </Card>
     </div>
   );

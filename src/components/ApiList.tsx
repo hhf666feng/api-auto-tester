@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Menu, Input, message } from 'antd';
-import { SearchOutlined } from '@ant-design/icons';
+import { Menu, Input, Tag, Tooltip, Badge } from 'antd';
+import { SearchOutlined, FolderOutlined, ApiOutlined } from '@ant-design/icons';
 import { ApiMethod } from '../types';
 import { useApi } from '../context/ApiContext';
 
@@ -24,6 +24,8 @@ interface ApiItem {
     message: string;
     data: any;
   };
+  status?: 'success' | 'failed' | 'not_tested';
+  lastTestedAt?: string;
 }
 
 const mockApis: ApiItem[] = [
@@ -64,7 +66,9 @@ const mockApis: ApiItem[] = [
         total: 100,
         items: []
       }
-    }
+    },
+    status: 'success',
+    lastTestedAt: '2024-02-20 15:30:00'
   },
   {
     id: '2',
@@ -98,9 +102,24 @@ const mockApis: ApiItem[] = [
         username: 'test',
         email: 'test@example.com'
       }
-    }
+    },
+    status: 'not_tested'
   }
 ];
+
+const methodColors: Record<ApiMethod, string> = {
+  'GET': '#87d068',
+  'POST': '#108ee9',
+  'PUT': '#f50',
+  'DELETE': '#ff4d4f',
+  'PATCH': '#faad14'
+};
+
+const statusColors: Record<string, string> = {
+  'success': '#52c41a',
+  'failed': '#ff4d4f',
+  'not_tested': '#d9d9d9'
+};
 
 const ApiList: React.FC = () => {
   const { setSelectedApi } = useApi();
@@ -113,7 +132,6 @@ const ApiList: React.FC = () => {
 
   const handleApiSelect = (api: ApiItem) => {
     setSelectedApi(api);
-    message.success(`已选择接口: ${api.name}`);
   };
 
   return (
@@ -124,35 +142,62 @@ const ApiList: React.FC = () => {
           placeholder="搜索接口"
           value={searchText}
           onChange={e => setSearchText(e.target.value)}
+          allowClear
         />
       </div>
       <Menu
         mode="inline"
         style={{ flex: 1, overflow: 'auto' }}
       >
-        <SubMenu key="user" title="用户管理模块">
+        <SubMenu 
+          key="user" 
+          title={
+            <span>
+              <FolderOutlined />
+              <span>用户管理模块</span>
+              <Badge 
+                count={filteredApis.length} 
+                style={{ 
+                  marginLeft: '8px',
+                  backgroundColor: '#52c41a'
+                }} 
+              />
+            </span>
+          }
+        >
           {filteredApis.map(api => (
             <Menu.Item
               key={api.id}
               onClick={() => handleApiSelect(api)}
-              style={{
-                display: 'flex',
-                alignItems: 'center'
-              }}
+              icon={<ApiOutlined />}
             >
-              <span
-                style={{
-                  padding: '2px 6px',
-                  borderRadius: '4px',
-                  marginRight: '8px',
-                  fontSize: '12px',
-                  background: api.method === 'GET' ? '#87d068' : '#108ee9',
-                  color: '#fff'
-                }}
-              >
-                {api.method}
-              </span>
-              {api.name}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <Tag color={methodColors[api.method]} style={{ marginRight: '8px' }}>
+                    {api.method}
+                  </Tag>
+                  <Tooltip title={api.path}>
+                    <span style={{ 
+                      maxWidth: '150px',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap'
+                    }}>
+                      {api.name}
+                    </span>
+                  </Tooltip>
+                </div>
+                {api.status && (
+                  <Badge 
+                    status={api.status === 'success' ? 'success' : api.status === 'failed' ? 'error' : 'default'}
+                    text={api.status === 'success' ? '通过' : api.status === 'failed' ? '失败' : '未测试'}
+                  />
+                )}
+              </div>
             </Menu.Item>
           ))}
         </SubMenu>

@@ -13,6 +13,8 @@ export interface ApiResponse {
   message: string;
 }
 
+export type ApiStatus = 'success' | 'failed' | 'not_tested';
+
 export interface ApiDetail {
   id: string;
   name: string;
@@ -22,4 +24,6 @@ export interface ApiDetail {
   parameters: ApiParameter[];
   headers: Record<string, string>;
   response: ApiResponse;
+  status?: ApiStatus;
+  lastTestedAt?: string;
 } 

@@ -1,5 +1,6 @@
 import React from 'react';
-import { Layout } from 'antd';
+import { Layout, Menu, Button, Space } from 'antd';
+import { PlusOutlined, SettingOutlined, FileTextOutlined, ApiOutlined } from '@ant-design/icons';
 import SplitPane from 'react-split-pane';
 import ApiList from './components/ApiList';
 import ApiDetail from './components/ApiDetail';
@@ -16,11 +17,38 @@ const App: React.FC = () => {
         <Header style={{ 
           display: 'flex', 
           alignItems: 'center', 
-          padding: '0 20px',
+          padding: '0 24px',
           background: '#fff',
           borderBottom: '1px solid #f0f0f0'
         }}>
-          <h1 style={{ margin: 0 }}>API 自动化测试平台</h1>
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            flex: 1 
+          }}>
+            <ApiOutlined style={{ fontSize: '24px', marginRight: '8px' }} />
+            <h1 style={{ margin: 0, marginRight: '48px' }}>API 自动化测试平台</h1>
+            <Menu 
+              mode="horizontal" 
+              defaultSelectedKeys={['apis']}
+              style={{ flex: 1, border: 'none' }}
+            >
+              <Menu.Item key="apis" icon={<ApiOutlined />}>
+                接口管理
+              </Menu.Item>
+              <Menu.Item key="reports" icon={<FileTextOutlined />}>
+                测试报告
+              </Menu.Item>
+              <Menu.Item key="settings" icon={<SettingOutlined />}>
+                系统设置
+              </Menu.Item>
+            </Menu>
+          </div>
+          <Space>
+            <Button type="primary" icon={<PlusOutlined />}>
+              新建接口
+            </Button>
+          </Space>
         </Header>
         <Layout>
           <div style={{ height: 'calc(100vh - 64px)', position: 'relative' }}>
