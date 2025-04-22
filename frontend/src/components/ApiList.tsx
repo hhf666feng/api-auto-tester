@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Menu, Input, Tag, Tooltip, Badge } from 'antd';
+import { Menu, Input, Tag } from 'antd';
 import { SearchOutlined, FolderOutlined, ApiOutlined } from '@ant-design/icons';
 import { ApiMethod } from '../types';
 import { useApi } from '../context/ApiContext';
@@ -24,8 +24,6 @@ interface ApiItem {
     message: string;
     data: any;
   };
-  status?: 'success' | 'failed' | 'not_tested';
-  lastTestedAt?: string;
 }
 
 const mockApis: ApiItem[] = [
@@ -66,9 +64,7 @@ const mockApis: ApiItem[] = [
         total: 100,
         items: []
       }
-    },
-    status: 'success',
-    lastTestedAt: '2024-02-20 15:30:00'
+    }
   },
   {
     id: '2',
@@ -102,8 +98,7 @@ const mockApis: ApiItem[] = [
         username: 'test',
         email: 'test@example.com'
       }
-    },
-    status: 'not_tested'
+    }
   }
 ];
 
@@ -113,12 +108,6 @@ const methodColors: Record<ApiMethod, string> = {
   'PUT': '#f50',
   'DELETE': '#ff4d4f',
   'PATCH': '#faad14'
-};
-
-const statusColors: Record<string, string> = {
-  'success': '#52c41a',
-  'failed': '#ff4d4f',
-  'not_tested': '#d9d9d9'
 };
 
 const ApiList: React.FC = () => {
@@ -135,8 +124,8 @@ const ApiList: React.FC = () => {
   };
 
   return (
-    <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <div style={{ padding: '16px' }}>
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: '#fff' }}>
+      <div style={{ padding: '16px', borderBottom: '1px solid #f0f0f0' }}>
         <Input
           prefix={<SearchOutlined />}
           placeholder="搜索接口"
@@ -147,7 +136,9 @@ const ApiList: React.FC = () => {
       </div>
       <Menu
         mode="inline"
-        style={{ flex: 1, overflow: 'auto' }}
+        style={{ flex: 1, overflow: 'auto', border: 'none' }}
+        defaultOpenKeys={['user']}
+        defaultSelectedKeys={['1']}
       >
         <SubMenu 
           key="user" 
@@ -155,13 +146,6 @@ const ApiList: React.FC = () => {
             <span>
               <FolderOutlined />
               <span>用户管理模块</span>
-              <Badge 
-                count={filteredApis.length} 
-                style={{ 
-                  marginLeft: '8px',
-                  backgroundColor: '#52c41a'
-                }} 
-              />
             </span>
           }
         >
@@ -174,29 +158,12 @@ const ApiList: React.FC = () => {
               <div style={{
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'space-between'
+                gap: '8px'
               }}>
-                <div style={{ display: 'flex', alignItems: 'center' }}>
-                  <Tag color={methodColors[api.method]} style={{ marginRight: '8px' }}>
-                    {api.method}
-                  </Tag>
-                  <Tooltip title={api.path}>
-                    <span style={{ 
-                      maxWidth: '150px',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap'
-                    }}>
-                      {api.name}
-                    </span>
-                  </Tooltip>
-                </div>
-                {api.status && (
-                  <Badge 
-                    status={api.status === 'success' ? 'success' : api.status === 'failed' ? 'error' : 'default'}
-                    text={api.status === 'success' ? '通过' : api.status === 'failed' ? '失败' : '未测试'}
-                  />
-                )}
+                <Tag color={methodColors[api.method]}>
+                  {api.method}
+                </Tag>
+                <span>{api.name}</span>
               </div>
             </Menu.Item>
           ))}
